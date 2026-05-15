@@ -14,7 +14,7 @@ Runs 24/7 on your Windows desktop. Generates AI missions, grades your answers, t
 ### 1. Backend — install Python dependencies
 
 ```bash
-cd skillforge-os/backend
+cd skillforge/backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
@@ -23,13 +23,15 @@ pip install -r requirements.txt
 ### 2. Frontend — install Node dependencies
 
 ```bash
-cd skillforge-os/frontend
+cd skillforge/frontend
 npm install
 ```
 
 ### 3. Run
 
-From the `skillforge-os` directory:
+#### Option A — Use the launcher (starts both at once)
+
+From the `skillforge` directory:
 
 ```bash
 start.bat
@@ -37,8 +39,26 @@ start.bat
 
 This will:
 - Start the backend on `http://localhost:8000`
-- Start the frontend on `http://localhost:5173`
+- Start the frontend on `http://localhost:5180`
 - Open the browser automatically
+
+#### Option B — Run manually (two separate terminals)
+
+**Terminal 1 — Backend:**
+
+```bash
+cd skillforge/backend
+python -m uvicorn main:app --reload --port 8000
+```
+
+**Terminal 2 — Frontend:**
+
+```bash
+cd skillforge/frontend
+npm run dev
+```
+
+Then open `http://localhost:5180` in your browser.
 
 ### 4. Configure your OpenAI API key
 
@@ -73,7 +93,7 @@ Then click **GENERATE MISSIONS NOW** in Settings (or wait for 08:00).
 ## Project Structure
 
 ```
-skillforge-os/
+skillforge/
 ├── backend/
 │   ├── requirements.txt
 │   ├── models.py         # SQLAlchemy models + seed data
@@ -82,30 +102,59 @@ skillforge-os/
 │   ├── notifier.py       # plyer desktop + in-app notifications
 │   ├── scheduler.py      # APScheduler background jobs
 │   ├── main.py           # FastAPI routes + lifespan + CORS
-│   └── skillforge.db     # (auto-created SQLite DB)
+│   ├── skillforge.db     # (auto-created SQLite DB)
+│   ├── alembic/          # Database migrations
+│   ├── alembic.ini       # Alembic configuration
+│   └── backups/          # Database backups
 │
 ├── frontend/
 │   ├── package.json
 │   ├── vite.config.ts
 │   ├── tsconfig.json
+│   ├── tsconfig.node.json
 │   ├── index.html
 │   └── src/
 │       ├── main.tsx
 │       ├── App.tsx
-│       ├── api/client.ts
+│       ├── vite-env.d.ts
+│       ├── api/
+│       │   ├── client.ts
+│       │   ├── hooks.ts
+│       │   └── types.ts
 │       ├── styles/global.css
 │       ├── components/
 │       │   ├── Sidebar.tsx
-│       │   └── Topbar.tsx
+│       │   ├── Topbar.tsx
+│       │   ├── RightPanel.tsx
+│       │   ├── Breadcrumb.tsx
+│       │   ├── ErrorBoundary.tsx
+│       │   └── Toast.tsx
 │       └── pages/
 │           ├── Dashboard.tsx
 │           ├── Missions.tsx
 │           ├── Skills.tsx
 │           ├── Achievements.tsx
 │           ├── Report.tsx
-│           └── Settings.tsx
+│           ├── Settings.tsx
+│           ├── AnswerHistory.tsx
+│           ├── Bookmarks.tsx
+│           ├── CommunityChallenges.tsx
+│           ├── FeatureUnlocks.tsx
+│           ├── History.tsx
+│           ├── Inventory.tsx
+│           ├── Leaderboard.tsx
+│           ├── LearningPaths.tsx
+│           ├── MonthlyReport.tsx
+│           ├── Notifications.tsx
+│           ├── Profile.tsx
+│           ├── Seasons.tsx
+│           ├── Support.tsx
+│           ├── WeeklyDigest.tsx
+│           └── XpDecay.tsx
 │
 ├── start.bat
+├── guidedoc.md
+├── projectdoc.md
 └── README.md
 ```
 
@@ -151,6 +200,9 @@ skillforge-os/
 
 **Frontend shows "Could not load data"**
 → Ensure backend is running at `http://localhost:8000`. Visit that URL in your browser — you should see `{"ok": true, ...}`.
+
+**Frontend not loading on expected port**
+→ The frontend runs on `http://localhost:5180`, not the default Vite port (5173). Check `start.bat` if you need to change it.
 
 **No desktop notifications appear**
 → Windows "Focus Assist" may suppress them. Open Settings → System → Notifications, allow SkillForge OS, turn off Focus Assist.
