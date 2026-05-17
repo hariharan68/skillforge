@@ -11,27 +11,38 @@ Runs 24/7 on your Windows desktop. Generates AI missions, grades your answers, t
 
 ## Quick Start
 
-### 1. Backend — install Python dependencies
+### 1. Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- At least one AI API key (OpenAI, Gemini, Claude, or Groq)
+
+### 2. Install dependencies
 
 ```bash
-cd skillforge/backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
+# Python dependencies (from project root)
+uv sync
 
-### 2. Frontend — install Node dependencies
-
-```bash
-cd skillforge/frontend
+# Frontend dependencies
+cd frontend
 npm install
+cd ..
 ```
 
 ### 3. Run
 
-#### Option A — Use the launcher (starts both at once)
+#### Option A — Using `uv` (recommended, single command)
 
 From the `skillforge` directory:
+
+```bash
+uv run python app.py
+```
+
+This starts both backend (port 8000) and frontend (port 5180) in one terminal. Press `Ctrl+C` to stop both.
+
+#### Option B — Use the batch launcher
 
 ```bash
 start.bat
@@ -42,13 +53,13 @@ This will:
 - Start the frontend on `http://localhost:5180`
 - Open the browser automatically
 
-#### Option B — Run manually (two separate terminals)
+#### Option C — Run manually (two separate terminals)
 
 **Terminal 1 — Backend:**
 
 ```bash
 cd skillforge/backend
-python -m uvicorn main:app --reload --port 8000
+uv run python -m uvicorn main:app --reload --port 8000
 ```
 
 **Terminal 2 — Frontend:**
@@ -94,6 +105,13 @@ Then click **GENERATE MISSIONS NOW** in Settings (or wait for 08:00).
 
 ```
 skillforge/
+├── app.py                # Single-command launcher (uv run python app.py)
+├── pyproject.toml        # Python dependencies (managed by uv)
+├── uv.lock               # Locked dependency versions
+├── scripts/
+│   ├── __init__.py
+│   └── dev.py            # Dev launcher module
+│
 ├── backend/
 │   ├── requirements.txt
 │   ├── models.py         # SQLAlchemy models + seed data
@@ -152,7 +170,7 @@ skillforge/
 │           ├── WeeklyDigest.tsx
 │           └── XpDecay.tsx
 │
-├── start.bat
+├── start.bat             # Legacy batch launcher
 ├── guidedoc.md
 ├── projectdoc.md
 └── README.md

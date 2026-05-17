@@ -10,7 +10,9 @@
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Launcher** | Windows Batch Script (`start.bat`) | Starts backend + frontend, opens browser |
+| **Launcher** | `uv run python app.py` | Starts backend + frontend in one command |
+| **Legacy Launcher** | Windows Batch Script (`start.bat`) | Starts backend + frontend, opens browser |
+| **Package Manager** | uv | Python dependency management + virtual env |
 | **Backend Framework** | FastAPI (Python 3.10+) | REST API, business logic |
 | **Server Process** | Uvicorn ASGI | HTTP server (port 8000) |
 | **Database** | SQLite (`backend/skillforge.db`) | Persistent local data |
@@ -38,14 +40,21 @@
 
 ```
 skillforge/
+├── app.py                    — Single-command launcher (uv run python app.py)
+├── pyproject.toml            — Python dependencies (managed by uv)
+├── uv.lock                   — Locked dependency versions
+├── scripts/
+│   ├── __init__.py
+│   └── dev.py                — Dev launcher module
+│
 ├── backend/
 │   ├── main.py               (3464 lines) — 55+ FastAPI routes
 │   ├── models.py             (350+ lines) — 11 SQLAlchemy tables
 │   ├── agent.py              (400+ lines) — Multi-provider AI (OpenAI/Gemini/Claude/Groq)
-│   ├── grader.py             (479 lines)  — XP calculation, ranks, streaks, combos, achievements
+│   ├── grader.py             (479 lines)  — XP calculation, ranks, streaks,combos,achivements              
 │   ├── scheduler.py          (231 lines)  — APScheduler with 5 background jobs
 │   ├── notifier.py           (234 lines)  — Desktop + email + in-app notifications
-│   ├── requirements.txt      — Python dependencies
+│   ├── requirements.txt      — Python dependencies (legacy, kept for reference)
 │   ├── alembic/              — Database migration scripts
 │   ├── alembic.ini           — Alembic config
 │   └── skillforge.db         — SQLite database (auto-created)
@@ -93,10 +102,11 @@ skillforge/
 │       └── styles/
 │           └── global.css    — Root CSS variables, layout grid, responsive design
 │
-├── start.bat                 — Launch script (backend + frontend + browser)
+├── start.bat                 — Legacy launch script (backend + frontend + browser)
 ├── README.md                 — Quick start guide
-├── TODO.md                   — Bug tracker
-└── newupdate v2.md           — Feature roadmap (50+ planned features)
+├── guidedoc.md               — Running instructions
+├── projectdoc.md             — Full project documentation
+└── README.md                 — Quick start guide
 ```
 
 ---
@@ -175,7 +185,7 @@ The app supports 4 AI providers with automatic fallback:
 
 ### User Journey
 
-1. **Launch**: Run `start.bat` - spawns backend (port 8000) + frontend (port 5180), opens browser
+1. **Launch**: Run `uv run python app.py` — starts backend (port 8000) + frontend (port 5180) in one terminal
 2. **First-time Setup**:
    - Navigate to Settings page
    - Paste API key (OpenAI, Gemini, Claude, or Groq)
@@ -386,36 +396,47 @@ Exponential XP thresholds: 0, 200, 500, 1000, 2000, 3500, 5500, 8000, 11000, 150
 ## How to Run
 
 ### Prerequisites
-- Python 3.10+
+- Python 3.11+
 - Node.js 18+
+- [uv](https://docs.astral.sh/uv/) — fast Python package manager
 - At least one AI API key (OpenAI, Gemini, Claude, or Groq)
 
-### Quick Start (Windows)
+### Quick Start with uv (Recommended)
+
 ```bash
-# Just run:
+# Install Python dependencies (first time or when deps change):
+uv sync
+
+# Install frontend dependencies (first time only):
+cd frontend && npm install && cd ..
+
+# Run both backend + frontend in one command:
+uv run python app.py
+```
+
+This starts:
+- Backend (FastAPI) on `http://localhost:8000`
+- Frontend (Vite) on `http://localhost:5180`
+
+Press `Ctrl+C` to stop both servers.
+
+### Legacy Launcher (Windows)
+```bash
 start.bat
 ```
-This will:
-1. Activate the Python virtual environment
-2. Start the FastAPI backend on port 8000
-3. Start the Vite dev server on port 5180
-4. Open `http://localhost:5180` in your browser
+This spawns two separate terminal windows and opens the browser automatically.
 
-### Manual Start
+### Manual Start (two terminals)
 
-**Backend:**
+**Terminal 1 — Backend:**
 ```bash
 cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uv run python -m uvicorn main:app --reload --port 8000
 ```
 
-**Frontend:**
+**Terminal 2 — Frontend:**
 ```bash
 cd frontend
-npm install
 npm run dev
 ```
 
